@@ -28,6 +28,12 @@
         .hidden {
             display: none;
         }
+        .summary-arrow {
+            transition: transform 0.2s ease-in-out;
+        }
+        details[open] .summary-arrow {
+            transform: rotate(180deg);
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -35,7 +41,7 @@
     <div id="app" class="max-w-4xl mx-auto">
 
         <!-- Header -->
-        <header class="flex justify-between items-center p-6 bg-white border-b border-gray-200">
+        <header class="flex justify-between items-center p-6 bg-white border-b border-gray-200 sticky top-0 z-10">
             <h1 class="text-3xl font-bold text-gray-800">My Recipes</h1>
             <button id="add-recipe-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full flex items-center shadow-md transition-transform transform hover:scale-105">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -59,23 +65,30 @@
     </div>
 
     <!-- Add/Edit Recipe Modal -->
-    <div id="add-recipe-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg transform transition-all scale-95 opacity-0" id="add-modal-content">
+    <div id="recipe-form-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg transform transition-all scale-95 opacity-0" id="recipe-form-modal-content">
             <div class="flex justify-between items-center p-6 border-b border-gray-200">
-                <h2 class="text-2xl font-bold text-gray-800">Add New Recipe</h2>
+                <h2 id="recipe-form-title" class="text-2xl font-bold text-gray-800">Add New Recipe</h2>
                 <button class="close-modal-btn text-gray-400 hover:text-gray-600">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
             </div>
-            <form id="add-recipe-form" class="p-6 space-y-4 modal-body overflow-y-auto max-h-[70vh]">
-                <input type="text" id="new-recipe-name" placeholder="Recipe Name (e.g., Classic Pancakes)" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                <input type="text" id="new-recipe-meal-type" placeholder="Meal Type (e.g., Breakfast, Lunch)" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                <input type="text" id="new-recipe-cuisine" placeholder="Cuisine (e.g., American, Asian)" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                <textarea id="new-recipe-ingredients" placeholder="Ingredients (comma separated)" class="w-full p-3 border border-gray-300 rounded-lg h-24 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" required></textarea>
-                <textarea id="new-recipe-instructions" placeholder="Instructions" class="w-full p-3 border border-gray-300 rounded-lg h-32 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" required></textarea>
+            <form id="recipe-form" class="p-6 space-y-4 modal-body overflow-y-auto max-h-[70vh]">
+                <input type="hidden" id="recipe-id">
+                <input type="text" id="recipe-name" placeholder="Recipe Name (e.g., Classic Pancakes)" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                <input type="text" id="recipe-meal-type" placeholder="Meal Type (e.g., Breakfast, Lunch)" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                <input type="text" id="recipe-cuisine" placeholder="Cuisine (e.g., American, Asian)" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                <select id="recipe-heaviness" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    <option value="" disabled selected>Select Meal Heaviness</option>
+                    <option value="light">Light</option>
+                    <option value="medium">Medium</option>
+                    <option value="heavy">Heavy</option>
+                </select>
+                <textarea id="recipe-ingredients" placeholder="Ingredients (comma separated)" class="w-full p-3 border border-gray-300 rounded-lg h-24 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" required></textarea>
+                <textarea id="recipe-instructions" placeholder="Instructions" class="w-full p-3 border border-gray-300 rounded-lg h-32 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" required></textarea>
             </form>
              <div class="p-6 border-t border-gray-200">
-                <button type="submit" form="add-recipe-form" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">Save Recipe</button>
+                <button type="submit" form="recipe-form" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">Save Recipe</button>
             </div>
         </div>
     </div>
@@ -102,52 +115,91 @@
         </div>
     </div>
 
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm transform transition-all scale-95 opacity-0" id="delete-modal-content">
+            <div class="p-6 text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto text-red-500 mb-4"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                <h3 class="text-lg font-bold text-gray-800">Delete Recipe?</h3>
+                <p class="text-gray-600 my-2">Are you sure you want to delete this recipe? This action cannot be undone.</p>
+            </div>
+            <div class="flex justify-center items-center p-4 bg-gray-50 rounded-b-2xl">
+                <button id="cancel-delete-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg mr-4">Cancel</button>
+                <button id="confirm-delete-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg">Delete</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // --- STATE ---
             let recipes = {
                 'Breakfast': {
                     'American': [
-                        { id: '1', name: 'Pancakes', ingredients: ['Flour', 'Milk', 'Eggs', 'Sugar'], instructions: 'Mix and cook.' },
-                        { id: '2', name: 'Scrambled Eggs', ingredients: ['Eggs', 'Milk', 'Butter'], instructions: 'Whisk and cook in a pan.' },
+                        { id: '1', name: 'Pancakes', ingredients: ['Flour', 'Milk', 'Eggs', 'Sugar'], instructions: 'Mix and cook.', heaviness: 'medium' },
+                        { id: '2', name: 'Scrambled Eggs', ingredients: ['Eggs', 'Milk', 'Butter'], instructions: 'Whisk and cook in a pan.', heaviness: 'light' },
                     ],
                     'Italian': [
-                        { id: '3', name: 'Frittata', ingredients: ['Eggs', 'Vegetables', 'Cheese'], instructions: 'Bake in an oven.' },
+                        { id: '3', name: 'Frittata', ingredients: ['Eggs', 'Vegetables', 'Cheese'], instructions: 'Bake in an oven.', heaviness: 'medium' },
                     ]
                 },
                 'Lunch': {
                     'Asian': [
-                        { id: '4', name: 'Sushi', ingredients: ['Rice', 'Nori', 'Fish'], instructions: 'Roll and slice.' },
+                        { id: '4', name: 'Sushi', ingredients: ['Rice', 'Nori', 'Fish'], instructions: 'Roll and slice.', heaviness: 'light' },
                     ],
                     'Middle Eastern': [
-                        { id: '5', name: 'Falafel Wrap', ingredients: ['Falafel', 'Pita', 'Tahini'], instructions: 'Assemble and enjoy.' },
+                        { id: '5', name: 'Falafel Wrap', ingredients: ['Falafel', 'Pita', 'Tahini'], instructions: 'Assemble and enjoy.', heaviness: 'heavy' },
                     ]
                 },
                 'Dinner': {
                     'Mexican': [
-                        { id: '6', name: 'Tacos', ingredients: ['Tortillas', 'Ground Beef', 'Salsa'], instructions: 'Fill tortillas and serve.' },
+                        { id: '6', name: 'Tacos', ingredients: ['Tortillas', 'Ground Beef', 'Salsa'], instructions: 'Fill tortillas and serve.', heaviness: 'heavy' },
                     ]
                 }
             };
 
+            let recipeToDeleteId = null;
+
             // --- DOM ELEMENTS ---
             const recipeListContainer = document.getElementById('recipe-list-container');
-            const addRecipeModal = document.getElementById('add-recipe-modal');
-            const addModalContent = document.getElementById('add-modal-content');
+            const recipeFormModal = document.getElementById('recipe-form-modal');
+            const recipeFormModalContent = document.getElementById('recipe-form-modal-content');
             const viewRecipeModal = document.getElementById('view-recipe-modal');
             const viewModalContent = document.getElementById('view-modal-content');
+            const deleteConfirmModal = document.getElementById('delete-confirm-modal');
+            const deleteModalContent = document.getElementById('delete-modal-content');
+            
             const addRecipeBtn = document.getElementById('add-recipe-btn');
-            const addRecipeForm = document.getElementById('add-recipe-form');
+            const recipeForm = document.getElementById('recipe-form');
             const searchInput = document.getElementById('search-input');
+            const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+            const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+
+            // --- HELPERS ---
+            const getHeavinessColor = (heaviness) => {
+                switch (heaviness) {
+                    case 'light': return 'bg-green-100 hover:bg-green-200';
+                    case 'medium': return 'bg-yellow-100 hover:bg-yellow-200';
+                    case 'heavy': return 'bg-red-100 hover:bg-red-200';
+                    default: return 'bg-gray-100 hover:bg-gray-200';
+                }
+            };
 
             // --- TEMPLATES ---
             const createRecipeCard = (recipe) => `
-                <div class="recipe-card flex items-center justify-between p-4 bg-gray-100 hover:bg-gray-200 rounded-lg cursor-pointer transition" data-recipe-id='${recipe.id}'>
-                    <div class="flex items-center">
+                <div class="recipe-card-container flex items-center justify-between p-4 rounded-lg cursor-pointer transition ${getHeavinessColor(recipe.heaviness)}" data-recipe-id='${recipe.id}'>
+                    <div class="recipe-card-view flex-grow flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600 mr-4"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
-                        <span class="font-medium text-gray-700">${recipe.name}</span>
+                        <span class="font-medium text-gray-800">${recipe.name}</span>
                     </div>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    <div class="flex items-center space-x-2">
+                        <button class="edit-recipe-btn p-2 rounded-full hover:bg-gray-300 transition" data-recipe-id='${recipe.id}'>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-600"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        </button>
+                        <button class="delete-recipe-btn p-2 rounded-full hover:bg-gray-300 transition" data-recipe-id='${recipe.id}'>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-600"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                        </button>
+                    </div>
                 </div>
             `;
             
@@ -156,7 +208,7 @@
                     <details open>
                         <summary class="flex justify-between items-center cursor-pointer font-semibold text-lg text-gray-800">
                             ${cuisine}
-                            <svg class="w-5 h-5 transform transition-transform duration-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                            <svg class="summary-arrow w-6 h-6 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </summary>
                         <div class="mt-4 space-y-3">
                             ${recipeList.map(createRecipeCard).join('')}
@@ -178,16 +230,27 @@
             const renderRecipes = (filteredRecipes = recipes) => {
                 recipeListContainer.innerHTML = Object.keys(filteredRecipes).length > 0 
                     ? Object.entries(filteredRecipes).map(([mealType, cuisines]) => createMealTypeSection(mealType, cuisines)).join('')
-                    : `<p class="text-center text-gray-500">No recipes found.</p>`;
+                    : `<p class="text-center text-gray-500 py-10">No recipes found.</p>`;
                 
                 // Add event listeners to newly created recipe cards
-                document.querySelectorAll('.recipe-card').forEach(card => {
-                    card.addEventListener('click', () => {
-                        const recipeId = card.dataset.recipeId;
+                document.querySelectorAll('.recipe-card-view').forEach(card => {
+                    card.closest('.recipe-card-container').addEventListener('click', (e) => {
+                        if (e.target.closest('.edit-recipe-btn') || e.target.closest('.delete-recipe-btn')) return;
+                        const recipeId = card.closest('.recipe-card-container').dataset.recipeId;
                         const recipe = findRecipeById(recipeId);
                         if(recipe) showViewModal(recipe);
                     });
                 });
+                document.querySelectorAll('.edit-recipe-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const recipeId = btn.dataset.recipeId;
+                    showEditModal(recipeId);
+                }));
+                document.querySelectorAll('.delete-recipe-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const recipeId = btn.dataset.recipeId;
+                    showDeleteConfirmModal(recipeId);
+                }));
             };
             
             // --- MODAL HANDLING ---
@@ -206,11 +269,29 @@
             };
 
             const showAddModal = () => {
-                addRecipeForm.reset();
-                openModal(addRecipeModal, addModalContent);
+                recipeForm.reset();
+                document.getElementById('recipe-id').value = '';
+                document.getElementById('recipe-form-title').textContent = 'Add New Recipe';
+                openModal(recipeFormModal, recipeFormModalContent);
+            };
+
+            const showEditModal = (recipeId) => {
+                const { recipe } = findRecipeById(recipeId);
+                if (!recipe) return;
+                
+                document.getElementById('recipe-id').value = recipe.id;
+                document.getElementById('recipe-name').value = recipe.name;
+                document.getElementById('recipe-meal-type').value = findMealTypeByRecipeId(recipeId);
+                document.getElementById('recipe-cuisine').value = findCuisineByRecipeId(recipeId);
+                document.getElementById('recipe-heaviness').value = recipe.heaviness;
+                document.getElementById('recipe-ingredients').value = recipe.ingredients.join(', ');
+                document.getElementById('recipe-instructions').value = recipe.instructions;
+                document.getElementById('recipe-form-title').textContent = 'Edit Recipe';
+
+                openModal(recipeFormModal, recipeFormModalContent);
             };
             
-            const showViewModal = (recipe) => {
+            const showViewModal = ({ recipe }) => {
                 document.getElementById('view-recipe-name').textContent = recipe.name;
                 const ingredientsList = document.getElementById('view-recipe-ingredients');
                 ingredientsList.innerHTML = recipe.ingredients.map(ing => `<li>${ing}</li>`).join('');
@@ -218,49 +299,56 @@
                 openModal(viewRecipeModal, viewModalContent);
             };
 
+            const showDeleteConfirmModal = (recipeId) => {
+                recipeToDeleteId = recipeId;
+                openModal(deleteConfirmModal, deleteModalContent);
+            };
+
             // --- EVENT LISTENERS ---
             addRecipeBtn.addEventListener('click', showAddModal);
 
             document.querySelectorAll('.close-modal-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    closeModal(addRecipeModal, addModalContent);
+                    closeModal(recipeFormModal, recipeFormModalContent);
                     closeModal(viewRecipeModal, viewModalContent);
                 });
             });
             
-            addRecipeModal.addEventListener('click', (e) => {
-                if(e.target === addRecipeModal) closeModal(addRecipeModal, addModalContent);
+            recipeFormModal.addEventListener('click', (e) => {
+                if(e.target === recipeFormModal) closeModal(recipeFormModal, recipeFormModalContent);
             });
-
             viewRecipeModal.addEventListener('click', (e) => {
                 if(e.target === viewRecipeModal) closeModal(viewRecipeModal, viewModalContent);
             });
+            deleteConfirmModal.addEventListener('click', (e) => {
+                if(e.target === deleteConfirmModal) closeModal(deleteConfirmModal, deleteModalContent);
+            });
             
-            addRecipeForm.addEventListener('submit', (e) => {
+            recipeForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                const name = document.getElementById('new-recipe-name').value;
-                const mealType = document.getElementById('new-recipe-meal-type').value;
-                const cuisine = document.getElementById('new-recipe-cuisine').value;
-                const ingredients = document.getElementById('new-recipe-ingredients').value.split(',').map(i => i.trim());
-                const instructions = document.getElementById('new-recipe-instructions').value;
+                const recipeId = document.getElementById('recipe-id').value;
+                const name = document.getElementById('recipe-name').value;
+                const mealType = document.getElementById('recipe-meal-type').value.trim();
+                const cuisine = document.getElementById('recipe-cuisine').value.trim();
+                const heaviness = document.getElementById('recipe-heaviness').value;
+                const ingredients = document.getElementById('recipe-ingredients').value.split(',').map(i => i.trim());
+                const instructions = document.getElementById('recipe-instructions').value;
 
-                const newRecipe = {
-                    id: Date.now().toString(),
-                    name,
-                    ingredients,
-                    instructions
+                if (recipeId) { // Editing existing recipe
+                    deleteRecipe(recipeId, false); // Delete old entry without re-rendering
+                }
+                
+                const newOrUpdatedRecipe = {
+                    id: recipeId || Date.now().toString(),
+                    name, ingredients, instructions, heaviness
                 };
 
-                if (!recipes[mealType]) {
-                    recipes[mealType] = {};
-                }
-                if (!recipes[mealType][cuisine]) {
-                    recipes[mealType][cuisine] = [];
-                }
-                recipes[mealType][cuisine].push(newRecipe);
+                if (!recipes[mealType]) recipes[mealType] = {};
+                if (!recipes[mealType][cuisine]) recipes[mealType][cuisine] = [];
+                recipes[mealType][cuisine].push(newOrUpdatedRecipe);
 
                 renderRecipes();
-                closeModal(addRecipeModal, addModalContent);
+                closeModal(recipeFormModal, recipeFormModalContent);
             });
             
             searchInput.addEventListener('input', (e) => {
@@ -269,34 +357,68 @@
                     renderRecipes(recipes);
                     return;
                 }
-
                 const filtered = Object.entries(recipes).reduce((acc, [meal, cuisines]) => {
                     const filteredCuisines = Object.entries(cuisines).reduce((cuisineAcc, [cuisine, recipeList]) => {
                         const matchingRecipes = recipeList.filter(recipe => recipe.name.toLowerCase().includes(searchTerm));
-                        if(matchingRecipes.length > 0) {
-                            cuisineAcc[cuisine] = matchingRecipes;
-                        }
+                        if(matchingRecipes.length > 0) cuisineAcc[cuisine] = matchingRecipes;
                         return cuisineAcc;
                     }, {});
-
-                    if(Object.keys(filteredCuisines).length > 0) {
-                        acc[meal] = filteredCuisines;
-                    }
+                    if(Object.keys(filteredCuisines).length > 0) acc[meal] = filteredCuisines;
                     return acc;
                 }, {});
-
                 renderRecipes(filtered);
+            });
+
+            cancelDeleteBtn.addEventListener('click', () => closeModal(deleteConfirmModal, deleteModalContent));
+            confirmDeleteBtn.addEventListener('click', () => {
+                if (recipeToDeleteId) {
+                    deleteRecipe(recipeToDeleteId);
+                    recipeToDeleteId = null;
+                }
+                closeModal(deleteConfirmModal, deleteModalContent);
             });
 
             // --- UTILITY FUNCTIONS ---
             const findRecipeById = (id) => {
-                for (const meal of Object.values(recipes)) {
-                    for (const cuisine of Object.values(meal)) {
-                        const found = cuisine.find(r => r.id === id);
-                        if (found) return found;
+                for (const mealType in recipes) {
+                    for (const cuisine in recipes[mealType]) {
+                        const recipe = recipes[mealType][cuisine].find(r => r.id === id);
+                        if (recipe) return { recipe, mealType, cuisine };
                     }
                 }
                 return null;
+            };
+
+            const findMealTypeByRecipeId = (id) => {
+                for (const mealType in recipes) {
+                    for (const cuisine in recipes[mealType]) {
+                        if (recipes[mealType][cuisine].some(r => r.id === id)) return mealType;
+                    }
+                }
+                return null;
+            };
+
+            const findCuisineByRecipeId = (id) => {
+                for (const mealType in recipes) {
+                    for (const cuisine in recipes[mealType]) {
+                        if (recipes[mealType][cuisine].some(r => r.id === id)) return cuisine;
+                    }
+                }
+                return null;
+            };
+
+            const deleteRecipe = (id, shouldRender = true) => {
+                const { mealType, cuisine } = findRecipeById(id);
+                if (mealType && cuisine) {
+                    recipes[mealType][cuisine] = recipes[mealType][cuisine].filter(r => r.id !== id);
+                    if (recipes[mealType][cuisine].length === 0) {
+                        delete recipes[mealType][cuisine];
+                    }
+                    if (Object.keys(recipes[mealType]).length === 0) {
+                        delete recipes[mealType];
+                    }
+                    if (shouldRender) renderRecipes();
+                }
             };
 
             // --- INITIAL RENDER ---
