@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for better aesthetics */
+        .modal-body::-webkit-scrollbar {
+            width: 8px;
+        }
+        .modal-body::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .modal-body::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        .modal-body::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <div id="app" class="max-w-4xl mx-auto">
+
+        <!-- Header -->
+        <header class="flex justify-between items-center p-6 bg-white border-b border-gray-200">
+            <h1 class="text-3xl font-bold text-gray-800">My Recipes</h1>
+            <button id="add-recipe-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full flex items-center shadow-md transition-transform transform hover:scale-105">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Add Recipe
+            </button>
+        </header>
+
+        <!-- Search Bar -->
+        <div class="p-6">
+            <div class="relative">
+                <input id="search-input" type="text" placeholder="Search recipes..." class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </div>
+        </div>
+
+        <!-- Recipe List Container -->
+        <main id="recipe-list-container" class="p-6 space-y-8">
+            <!-- Recipes will be dynamically inserted here -->
+        </main>
+
+    </div>
+
+    <!-- Add/Edit Recipe Modal -->
+    <div id="add-recipe-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg transform transition-all scale-95 opacity-0" id="add-modal-content">
+            <div class="flex justify-between items-center p-6 border-b border-gray-200">
+                <h2 class="text-2xl font-bold text-gray-800">Add New Recipe</h2>
+                <button class="close-modal-btn text-gray-400 hover:text-gray-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <form id="add-recipe-form" class="p-6 space-y-4 modal-body overflow-y-auto max-h-[70vh]">
+                <input type="text" id="new-recipe-name" placeholder="Recipe Name (e.g., Classic Pancakes)" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                <input type="text" id="new-recipe-meal-type" placeholder="Meal Type (e.g., Breakfast, Lunch)" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                <input type="text" id="new-recipe-cuisine" placeholder="Cuisine (e.g., American, Asian)" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                <textarea id="new-recipe-ingredients" placeholder="Ingredients (comma separated)" class="w-full p-3 border border-gray-300 rounded-lg h-24 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" required></textarea>
+                <textarea id="new-recipe-instructions" placeholder="Instructions" class="w-full p-3 border border-gray-300 rounded-lg h-32 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" required></textarea>
+            </form>
+             <div class="p-6 border-t border-gray-200">
+                <button type="submit" form="add-recipe-form" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">Save Recipe</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Recipe Modal -->
+    <div id="view-recipe-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg transform transition-all scale-95 opacity-0" id="view-modal-content">
+            <div class="flex justify-between items-center p-6 border-b border-gray-200">
+                <h2 id="view-recipe-name" class="text-2xl font-bold text-gray-800"></h2>
+                <button class="close-modal-btn text-gray-400 hover:text-gray-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="p-6 space-y-6 modal-body overflow-y-auto max-h-[70vh]">
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-2">Ingredients</h3>
+                    <ul id="view-recipe-ingredients" class="list-disc list-inside space-y-1 text-gray-600"></ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-2">Instructions</h3>
+                    <p id="view-recipe-instructions" class="text-gray-600 whitespace-pre-wrap"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- STATE ---
+            let recipes = {
+                'Breakfast': {
+                    'American': [
+                        { id: '1', name: 'Pancakes', ingredients: ['Flour', 'Milk', 'Eggs', 'Sugar'], instructions: 'Mix and cook.' },
+                        { id: '2', name: 'Scrambled Eggs', ingredients: ['Eggs', 'Milk', 'Butter'], instructions: 'Whisk and cook in a pan.' },
+                    ],
+                    'Italian': [
+                        { id: '3', name: 'Frittata', ingredients: ['Eggs', 'Vegetables', 'Cheese'], instructions: 'Bake in an oven.' },
+                    ]
+                },
+                'Lunch': {
+                    'Asian': [
+                        { id: '4', name: 'Sushi', ingredients: ['Rice', 'Nori', 'Fish'], instructions: 'Roll and slice.' },
+                    ],
+                    'Middle Eastern': [
+                        { id: '5', name: 'Falafel Wrap', ingredients: ['Falafel', 'Pita', 'Tahini'], instructions: 'Assemble and enjoy.' },
+                    ]
+                },
+                'Dinner': {
+                    'Mexican': [
+                        { id: '6', name: 'Tacos', ingredients: ['Tortillas', 'Ground Beef', 'Salsa'], instructions: 'Fill tortillas and serve.' },
+                    ]
+                }
+            };
+
+            // --- DOM ELEMENTS ---
+            const recipeListContainer = document.getElementById('recipe-list-container');
+            const addRecipeModal = document.getElementById('add-recipe-modal');
+            const addModalContent = document.getElementById('add-modal-content');
+            const viewRecipeModal = document.getElementById('view-recipe-modal');
+            const viewModalContent = document.getElementById('view-modal-content');
+            const addRecipeBtn = document.getElementById('add-recipe-btn');
+            const addRecipeForm = document.getElementById('add-recipe-form');
+            const searchInput = document.getElementById('search-input');
+
+            // --- TEMPLATES ---
+            const createRecipeCard = (recipe) => `
+                <div class="recipe-card flex items-center justify-between p-4 bg-gray-100 hover:bg-gray-200 rounded-lg cursor-pointer transition" data-recipe-id='${recipe.id}'>
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600 mr-4"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                        <span class="font-medium text-gray-700">${recipe.name}</span>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
+            `;
+            
+            const createCuisineSection = (cuisine, recipeList) => `
+                <div class="bg-white rounded-xl shadow-sm p-5">
+                    <details open>
+                        <summary class="flex justify-between items-center cursor-pointer font-semibold text-lg text-gray-800">
+                            ${cuisine}
+                            <svg class="w-5 h-5 transform transition-transform duration-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                        </summary>
+                        <div class="mt-4 space-y-3">
+                            ${recipeList.map(createRecipeCard).join('')}
+                        </div>
+                    </details>
+                </div>
+            `;
+
+            const createMealTypeSection = (mealType, cuisines) => `
+                <section>
+                    <h2 class="text-2xl font-bold text-gray-700 mb-4">${mealType}</h2>
+                    <div class="space-y-4">
+                        ${Object.entries(cuisines).map(([cuisine, recipeList]) => createCuisineSection(cuisine, recipeList)).join('')}
+                    </div>
+                </section>
+            `;
+
+            // --- RENDER FUNCTION ---
+            const renderRecipes = (filteredRecipes = recipes) => {
+                recipeListContainer.innerHTML = Object.keys(filteredRecipes).length > 0 
+                    ? Object.entries(filteredRecipes).map(([mealType, cuisines]) => createMealTypeSection(mealType, cuisines)).join('')
+                    : `<p class="text-center text-gray-500">No recipes found.</p>`;
+                
+                // Add event listeners to newly created recipe cards
+                document.querySelectorAll('.recipe-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        const recipeId = card.dataset.recipeId;
+                        const recipe = findRecipeById(recipeId);
+                        if(recipe) showViewModal(recipe);
+                    });
+                });
+            };
+            
+            // --- MODAL HANDLING ---
+            const openModal = (modal, content) => {
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    content.classList.remove('scale-95', 'opacity-0');
+                    content.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            };
+
+            const closeModal = (modal, content) => {
+                content.classList.remove('scale-100', 'opacity-100');
+                content.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => modal.classList.add('hidden'), 200);
+            };
+
+            const showAddModal = () => {
+                addRecipeForm.reset();
+                openModal(addRecipeModal, addModalContent);
+            };
+            
+            const showViewModal = (recipe) => {
+                document.getElementById('view-recipe-name').textContent = recipe.name;
+                const ingredientsList = document.getElementById('view-recipe-ingredients');
+                ingredientsList.innerHTML = recipe.ingredients.map(ing => `<li>${ing}</li>`).join('');
+                document.getElementById('view-recipe-instructions').textContent = recipe.instructions;
+                openModal(viewRecipeModal, viewModalContent);
+            };
+
+            // --- EVENT LISTENERS ---
+            addRecipeBtn.addEventListener('click', showAddModal);
+
+            document.querySelectorAll('.close-modal-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    closeModal(addRecipeModal, addModalContent);
+                    closeModal(viewRecipeModal, viewModalContent);
+                });
+            });
+            
+            addRecipeModal.addEventListener('click', (e) => {
+                if(e.target === addRecipeModal) closeModal(addRecipeModal, addModalContent);
+            });
+
+            viewRecipeModal.addEventListener('click', (e) => {
+                if(e.target === viewRecipeModal) closeModal(viewRecipeModal, viewModalContent);
+            });
+            
+            addRecipeForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = document.getElementById('new-recipe-name').value;
+                const mealType = document.getElementById('new-recipe-meal-type').value;
+                const cuisine = document.getElementById('new-recipe-cuisine').value;
+                const ingredients = document.getElementById('new-recipe-ingredients').value.split(',').map(i => i.trim());
+                const instructions = document.getElementById('new-recipe-instructions').value;
+
+                const newRecipe = {
+                    id: Date.now().toString(),
+                    name,
+                    ingredients,
+                    instructions
+                };
+
+                if (!recipes[mealType]) {
+                    recipes[mealType] = {};
+                }
+                if (!recipes[mealType][cuisine]) {
+                    recipes[mealType][cuisine] = [];
+                }
+                recipes[mealType][cuisine].push(newRecipe);
+
+                renderRecipes();
+                closeModal(addRecipeModal, addModalContent);
+            });
+            
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                if (!searchTerm) {
+                    renderRecipes(recipes);
+                    return;
+                }
+
+                const filtered = Object.entries(recipes).reduce((acc, [meal, cuisines]) => {
+                    const filteredCuisines = Object.entries(cuisines).reduce((cuisineAcc, [cuisine, recipeList]) => {
+                        const matchingRecipes = recipeList.filter(recipe => recipe.name.toLowerCase().includes(searchTerm));
+                        if(matchingRecipes.length > 0) {
+                            cuisineAcc[cuisine] = matchingRecipes;
+                        }
+                        return cuisineAcc;
+                    }, {});
+
+                    if(Object.keys(filteredCuisines).length > 0) {
+                        acc[meal] = filteredCuisines;
+                    }
+                    return acc;
+                }, {});
+
+                renderRecipes(filtered);
+            });
+
+            // --- UTILITY FUNCTIONS ---
+            const findRecipeById = (id) => {
+                for (const meal of Object.values(recipes)) {
+                    for (const cuisine of Object.values(meal)) {
+                        const found = cuisine.find(r => r.id === id);
+                        if (found) return found;
+                    }
+                }
+                return null;
+            };
+
+            // --- INITIAL RENDER ---
+            renderRecipes();
+        });
+    </script>
+</body>
+</html>
