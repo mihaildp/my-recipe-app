@@ -7,6 +7,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        html {
+            scroll-behavior: smooth;
+        }
         body {
             font-family: 'Inter', sans-serif;
         }
@@ -37,10 +40,6 @@
     <div id="login-screen" class="flex flex-col items-center justify-center h-screen p-4">
         <h1 class="text-4xl font-bold text-gray-800 mb-4 text-center">The Pertov Recipe Book</h1>
         <p class="text-gray-600 mb-8 text-center">Sign in to save and access your recipes from anywhere.</p>
-        <div id="config-error" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-6 max-w-md text-center">
-            <strong class="font-bold">Configuration Error!</strong>
-            <span class="block sm:inline">Please add your Firebase configuration details to the code.</span>
-        </div>
         <button id="login-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full flex items-center shadow-lg transition-transform transform hover:scale-105">
             <svg class="w-6 h-6 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C42.022,35.244,44,30.036,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg>
             Sign in with Google
@@ -51,13 +50,24 @@
     <div id="app" class="max-w-4xl mx-auto hidden">
         <!-- Header -->
         <header class="flex justify-between items-center p-6 bg-white border-b border-gray-200 sticky top-0 z-10">
-            <h1 class="text-3xl font-bold text-gray-800">The Pertov Recipe Book</h1>
-            <div class="flex items-center">
-                <button id="add-recipe-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full flex items-center shadow-md transition-transform transform hover:scale-105 mr-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                    Add Recipe
+            <h1 class="text-xl md:text-3xl font-bold text-gray-800">The Pertov Recipe Book</h1>
+            <div class="flex items-center space-x-2 md:space-x-4">
+                <!-- Cuisine Dropdown -->
+                <div class="relative" id="cuisine-menu-container">
+                    <button id="cuisine-menu-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-full flex items-center">
+                        Cuisines
+                        <svg class="w-4 h-4 ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                    </button>
+                    <div id="cuisine-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20">
+                        <!-- Dropdown items will be inserted here -->
+                    </div>
+                </div>
+                <button id="add-recipe-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full flex items-center shadow-md transition-transform transform hover:scale-105">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden md:inline mr-2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    Add
                 </button>
                 <button id="logout-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-full flex items-center shadow-md transition-transform transform hover:scale-105">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden md:inline mr-2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                     Sign Out
                 </button>
             </div>
@@ -165,18 +175,6 @@
             appId: "1:280083068960:web:04ed6d6515e5c0b44ce445"
         };
         
-        // --- Configuration Check ---
-        // This check ensures that the user has replaced the placeholder Firebase config.
-        // If not, it displays an error message and disables the login button.
-        const configErrorDiv = document.getElementById('config-error');
-        const loginBtn = document.getElementById('login-btn');
-
-        if (firebaseConfig.apiKey.startsWith("YOUR_") || firebaseConfig.projectId.startsWith("YOUR_")) {
-            configErrorDiv.classList.remove('hidden');
-            loginBtn.disabled = true;
-            loginBtn.classList.add('opacity-50', 'cursor-not-allowed');
-        }
-
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -190,6 +188,7 @@
         // DOM Elements
         const loginScreen = document.getElementById('login-screen');
         const appContainer = document.getElementById('app');
+        const loginBtn = document.getElementById('login-btn');
         const logoutBtn = document.getElementById('logout-btn');
         const recipeListContainer = document.getElementById('recipe-list-container');
         const appLoader = document.getElementById('app-loader');
@@ -204,17 +203,17 @@
         const searchInput = document.getElementById('search-input');
         const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
         const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+        const cuisineMenuBtn = document.getElementById('cuisine-menu-btn');
+        const cuisineDropdown = document.getElementById('cuisine-dropdown');
 
         // Firebase Auth State Listener
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // User is signed in
                 userId = user.uid;
                 loginScreen.classList.add('hidden');
                 appContainer.classList.remove('hidden');
                 await loadRecipes();
             } else {
-                // User is signed out
                 userId = null;
                 recipes = {};
                 loginScreen.classList.remove('hidden');
@@ -222,25 +221,22 @@
             }
         });
 
-        // Firebase Functions
         const loadRecipes = async () => {
             if (!userId) return;
             appLoader.classList.remove('hidden');
-            recipeListContainer.innerHTML = ''; // Clear previous content
+            recipeListContainer.innerHTML = ''; 
             recipeListContainer.appendChild(appLoader);
-
             const docRef = doc(db, "users", userId);
             const docSnap = await getDoc(docRef);
-
             if (docSnap.exists()) {
                 recipes = docSnap.data().recipes || {};
             } else {
-                // New user, create an empty document
                 recipes = {};
                 await saveRecipes();
             }
             appLoader.classList.add('hidden');
             renderRecipes();
+            renderCuisineMenu();
         };
 
         const saveRecipes = async () => {
@@ -252,10 +248,8 @@
                 alert("Could not save recipes. Please check your connection and try again.");
             }
         };
-
-        // Event Listeners
+        
         loginBtn.addEventListener('click', () => {
-            if (loginBtn.disabled) return;
             signInWithPopup(auth, provider).catch((error) => {
                 console.error("Authentication error:", error);
                 alert(`Login failed: ${error.message}`);
@@ -266,9 +260,6 @@
             signOut(auth);
         });
         
-        // --- The rest of the app logic remains largely the same ---
-        // --- but now calls saveRecipes() after any modification. ---
-
         const getHeavinessColor = (heaviness) => {
             switch (heaviness) {
                 case 'light': return 'bg-green-100 hover:bg-green-200';
@@ -290,13 +281,16 @@
                 </div>
             </div>`;
         
-        const createCuisineSection = (cuisine, recipeList) => `
-            <div class="bg-white rounded-xl shadow-sm p-5">
-                <details open>
-                    <summary class="flex justify-between items-center cursor-pointer font-semibold text-lg text-gray-800">${cuisine}<svg class="summary-arrow w-6 h-6 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg></summary>
-                    <div class="mt-4 space-y-3">${recipeList.map(createRecipeCard).join('')}</div>
-                </details>
-            </div>`;
+        const createCuisineSection = (cuisine, recipeList) => {
+            const cuisineId = `cuisine-${cuisine.replace(/\s+/g, '-')}`;
+            return `
+                <div id="${cuisineId}" class="bg-white rounded-xl shadow-sm p-5">
+                    <details open>
+                        <summary class="flex justify-between items-center cursor-pointer font-semibold text-lg text-gray-800">${cuisine}<svg class="summary-arrow w-6 h-6 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg></summary>
+                        <div class="mt-4 space-y-3">${recipeList.map(createRecipeCard).join('')}</div>
+                    </details>
+                </div>`;
+        };
 
         const createMealTypeSection = (mealType, cuisines) => `
             <section>
@@ -306,7 +300,7 @@
 
         const renderRecipes = (filteredRecipes = recipes) => {
             if (appLoader.parentElement) appLoader.remove();
-            recipeListContainer.innerHTML = Object.keys(filteredRecipes).length > 0 
+            recipeListContainer.innerHTML = (filteredRecipes && Object.keys(filteredRecipes).length > 0)
                 ? Object.entries(filteredRecipes).map(([mealType, cuisines]) => createMealTypeSection(mealType, cuisines)).join('')
                 : `<p class="text-center text-gray-500 py-10">No recipes yet. Click "Add Recipe" to get started!</p>`;
             
@@ -328,6 +322,28 @@
             }));
         };
         
+        const renderCuisineMenu = () => {
+            const allCuisines = new Set();
+            Object.values(recipes).forEach(meal => {
+                Object.keys(meal).forEach(cuisine => allCuisines.add(cuisine));
+            });
+            
+            cuisineDropdown.innerHTML = '';
+            if (allCuisines.size === 0) {
+                 cuisineDropdown.innerHTML = `<span class="block px-4 py-2 text-sm text-gray-500">No cuisines found</span>`;
+                 return;
+            }
+
+            allCuisines.forEach(cuisine => {
+                const link = document.createElement('a');
+                link.href = `#cuisine-${cuisine.replace(/\s+/g, '-')}`;
+                link.className = 'block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100';
+                link.textContent = cuisine;
+                link.onclick = () => cuisineDropdown.classList.add('hidden');
+                cuisineDropdown.appendChild(link);
+            });
+        };
+
         const openModal = (modal, content) => {
             modal.classList.remove('hidden');
             setTimeout(() => {
@@ -433,6 +449,7 @@
 
             await saveRecipes();
             renderRecipes();
+            renderCuisineMenu();
             closeModal(recipeFormModal, recipeFormModalContent);
         });
         
@@ -456,12 +473,25 @@
             if (recipeToDeleteId) {
                 deleteRecipe(recipeToDeleteId);
                 await saveRecipes();
+                renderCuisineMenu();
                 recipeToDeleteId = null;
             }
             closeModal(deleteConfirmModal, deleteModalContent);
         });
 
+        cuisineMenuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            cuisineDropdown.classList.toggle('hidden');
+        });
+        
+        window.addEventListener('click', (e) => {
+            if (!cuisineMenuBtn.contains(e.target)) {
+                cuisineDropdown.classList.add('hidden');
+            }
+        });
+
         const findRecipeById = (id) => {
+            if (!recipes) return null;
             for (const mealType in recipes) {
                 for (const cuisine in recipes[mealType]) {
                     const recipe = recipes[mealType][cuisine].find(r => r.id === id);
