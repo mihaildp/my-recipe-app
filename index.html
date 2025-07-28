@@ -235,8 +235,9 @@
                 await saveRecipes();
             }
             appLoader.classList.add('hidden');
-            renderRecipes();
-            renderCuisineMenu();
+            // Explicitly pass the loaded recipes to the render functions to avoid timing issues
+            renderRecipes(recipes);
+            renderCuisineMenu(recipes);
         };
 
         const saveRecipes = async () => {
@@ -322,9 +323,9 @@
             }));
         };
         
-        const renderCuisineMenu = () => {
+        const renderCuisineMenu = (recipesToRender = recipes) => {
             const allCuisines = new Set();
-            Object.values(recipes).forEach(meal => {
+            Object.values(recipesToRender).forEach(meal => {
                 Object.keys(meal).forEach(cuisine => allCuisines.add(cuisine));
             });
             
@@ -334,7 +335,7 @@
                  return;
             }
 
-            allCuisines.forEach(cuisine => {
+            Array.from(allCuisines).sort().forEach(cuisine => {
                 const link = document.createElement('a');
                 link.href = `#cuisine-${cuisine.replace(/\s+/g, '-')}`;
                 link.className = 'block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100';
@@ -473,7 +474,6 @@
             if (recipeToDeleteId) {
                 deleteRecipe(recipeToDeleteId);
                 await saveRecipes();
-                renderCuisineMenu();
                 recipeToDeleteId = null;
             }
             closeModal(deleteConfirmModal, deleteModalContent);
@@ -510,9 +510,12 @@
                 recipes[mealType][cuisine] = recipes[mealType][cuisine].filter(r => r.id !== id);
                 if (recipes[mealType][cuisine].length === 0) delete recipes[mealType][cuisine];
                 if (Object.keys(recipes[mealType]).length === 0) delete recipes[mealType];
-                if (shouldRender) renderRecipes();
+                if (shouldRender) {
+                    renderRecipes();
+                    renderCuisineMenu();
+                }
             }
         };
     </script>
 </body>
-</html>
+</ht
